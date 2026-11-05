@@ -38,13 +38,22 @@ type Props = {
 // ζ ≈ 0.37: 1 overshoot visível e assenta em ~0.5s (micro-interação não deve arrastar).
 const SPRING = { damping: 10, stiffness: 300, mass: 0.6 };
 
+// Função "solta" chamada DE DENTRO do useAnimatedStyle (UI thread) → precisa da
+// diretiva 'worklet'. O plugin Babel só workletiza sozinho o callback dos hooks;
+// sem a diretiva aqui, o app quebra com "Tried to synchronously call a non-worklet
+// function on the UI thread".
+const heartTransform = (scale: number, rotationDeg: number) => {
+  'worklet';
+  return [{ scale }, { rotateZ: `${rotationDeg}deg` }];
+};
+
 export default function HeartButton({ active, onPress, size = 24 }: Props) {
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
   const reduceMotion = useReducedMotion();
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }, { rotateZ: `${rotation.value}deg` }],
+    transform: heartTransform(scale.value, rotation.value),
   }));
 
   // Armadilha do Pressable: em tap rápido (< minPressDuration, 130ms) o onPressOut

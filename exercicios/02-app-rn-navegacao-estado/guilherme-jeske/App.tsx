@@ -38,6 +38,7 @@ const linking: LinkingOptions<RootStackParamList> = {
         screens: {
           Home: '',
           Favorites: 'favoritos',
+          Settings: 'ajustes',
         },
       },
       Detail: {

@@ -1,17 +1,19 @@
 // src/routes/BottomTabs.tsx
 //
-// BÔNUS — Bottom Tabs com aba Favoritos (lista persistida no MMKV).
+// BÔNUS — Bottom Tabs: Filmes + Favoritos (lista persistida no MMKV) + Ajustes.
 // Doc: https://reactnavigation.org/docs/bottom-tab-navigator
 
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import MovieList from '@/screens/MovieList';
 import FavoritesScreen from '@/screens/FavoritesScreen';
+import SettingsScreen from '@/screens/SettingsScreen';
 import { useFavoritesStore } from '@/store/favoritesStore';
 
 export type TabParamList = {
   Home: undefined;
   Favorites: undefined;
+  Settings: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -40,6 +42,11 @@ export default function BottomTabs() {
           tabBarIcon: tabIcon('❤️'),
           tabBarBadge: favCount > 0 ? favCount : undefined,
         }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Ajustes', tabBarIcon: tabIcon('⚙️') }}
       />
     </Tab.Navigator>
   );
