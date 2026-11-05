@@ -16,7 +16,7 @@ export default defineConfig({
     VitePWA({
       // TODO 3 (parte 1): hoje o app se atualiza SOZINHO. Troque para o modo em que
       // o usuário decide quando atualizar (veja a tabela do slide "Nova versão").
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'TMDB Popular Movies',
@@ -50,7 +50,32 @@ export default defineConfig({
         //        só entra no cache se você liberar o status 0 em cacheableResponse
         //
         // Referências: slides "Cache strategies" e "vite-plugin-pwa" · web.dev/learn/pwa (módulo Caching)
-        runtimeCaching: [],
+        runtimeCaching: [
+          {
+            // (a) API de filmes: rede primeiro, cache como reserva
+            urlPattern: ({ url }) => url.origin === 'https://api.themoviedb.org',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'tmdb-api',
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+              // API responde com CORS → só guarda respostas 200 (evita cachear erro)
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            // (b) Pôsteres: vêm de image.tmdb.org (outro host), imagem não muda
+            urlPattern: ({ url }) => url.origin === 'https://image.tmdb.org',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tmdb-images',
+              // opacas contam ~7 MB de quota cada no Chrome → se estourar, limpa este cache
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7, purgeOnQuotaError: true },
+              // <img> cross-origin sem CORS → resposta opaca (status 0)
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
