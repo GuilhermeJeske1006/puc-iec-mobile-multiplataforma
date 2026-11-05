@@ -1,0 +1,51 @@
+name: Tests Atividade 2 (guilherme-jeske)
+
+# O starter traz um test.yml em exercicios/.../starter/.github/workflows/, mas o GitHub
+# só executa workflows da raiz do repo. Este é o mesmo workflow, apontado pra minha entrega.
+on:
+  push:
+    paths:
+      - 'exercicios/02-app-rn-navegacao-estado/guilherme-jeske/**'
+      - '.github/workflows/test-atividade-2-guilherme-jeske.yml'
+  pull_request:
+    paths:
+      - 'exercicios/02-app-rn-navegacao-estado/guilherme-jeske/**'
+      - '.github/workflows/test-atividade-2-guilherme-jeske.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: exercicios/02-app-rn-navegacao-estado/guilherme-jeske
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: exercicios/02-app-rn-navegacao-estado/guilherme-jeske/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Rodar testes
+        run: npm test -- --json --outputFile=results.json --passWithNoTests
+
+      - name: Validar mínimo de testes
+        run: |
+          TESTS_PASSED=$(jq '.numPassedTests' results.json)
+          TESTS_TOTAL=$(jq '.numTotalTests' results.json)
+          echo "✅ Passou: $TESTS_PASSED / $TESTS_TOTAL"
+          MIN_REQUIRED=6
+          if [ "$TESTS_PASSED" -lt "$MIN_REQUIRED" ]; then
+            echo "❌ Mínimo $MIN_REQUIRED testes verdes obrigatório (encontrado: $TESTS_PASSED)"
+            exit 1
+          fi
+          echo "✅ Atende mínimo de $MIN_REQUIRED testes"
