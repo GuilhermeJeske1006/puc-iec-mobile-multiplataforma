@@ -35,7 +35,8 @@ type Props = {
   size?: number;
 };
 
-const SPRING = { damping: 6, stiffness: 220, mass: 0.6 };
+// ζ ≈ 0.37: 1 overshoot visível e assenta em ~0.5s (micro-interação não deve arrastar).
+const SPRING = { damping: 10, stiffness: 300, mass: 0.6 };
 
 export default function HeartButton({ active, onPress, size = 24 }: Props) {
   const scale = useSharedValue(1);
